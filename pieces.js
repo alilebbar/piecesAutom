@@ -2,7 +2,8 @@
 const pieces = await fetch("pieces-autos.json").then((pieces)=>pieces.json())
 
 //Construire notre balise
-for(let i=0;i<pieces.length;i++){
+function genererPieces(pieces){
+    for(let i=0;i<pieces.length;i++){
 const article = pieces[i]
 const piecesElement=document.createElement("article")
 const imagesElement = document.createElement("img")
@@ -19,6 +20,7 @@ const stockElement = document.createElement("p")
 stockElement.innerText = `${article.disponibilite ? "En Stock" : "Rupture de stock"}`
 
 //Rattachement de notre balise au DOM
+
 const sectionFiches = document.querySelector(".fiches")
 sectionFiches.appendChild(piecesElement)
 piecesElement.appendChild(imagesElement)
@@ -28,10 +30,17 @@ piecesElement.appendChild(categorieElement)
 piecesElement.appendChild(descriptionElement)
 piecesElement.appendChild(stockElement)
 }
+}
+
+genererPieces(pieces)
+
 const boutonTrier = document.querySelector(".btn-trier")
 boutonTrier.addEventListener("click", function () {
     const piecesOrdonnees=pieces.toSorted((a,b)=>a.prix-b.prix)
      console.log(piecesOrdonnees);
+     document.querySelector(".fiches").innerHTML=""
+     genererPieces(piecesOrdonnees)
+     
  })
 
 
@@ -39,6 +48,8 @@ boutonTrier.addEventListener("click", function () {
  boutonFiltrer.addEventListener("click", function () {
     const piecesFiltrees = pieces.filter((piece)=>piece.prix <= 35)
     console.log(piecesFiltrees)
+     document.querySelector(".fiches").innerHTML=""
+     genererPieces(piecesFiltrees)
 })
 
 
@@ -46,6 +57,8 @@ const boutonFiltrerDesc = document.querySelector(".btn-description")
 boutonFiltrerDesc.addEventListener("click", ()=>{
     const piecesFDesc = pieces.filter((piece)=>piece.description)
     console.log(piecesFDesc)
+     document.querySelector(".fiches").innerHTML=""
+     genererPieces(piecesFDesc)
 })
 
 
@@ -53,7 +66,12 @@ const boutonDecroissant = document.querySelector(".btn-decroissant")
 boutonDecroissant.addEventListener("click",()=>{
     const piecesDecroissant= pieces.toSorted((a,b)=>b.prix-a.prix)
     console.log(piecesDecroissant)
+     document.querySelector(".fiches").innerHTML=""
+     genererPieces(piecesDecroissant)
+
 })
+
+
 //focaliser sur les nom avec la fonction map 
 const noms=pieces.map(piece=>piece.nom)
 
@@ -96,3 +114,14 @@ for(let i=0;i<prixTab.length;i++){
 //integer les balises
 const disponible=document.querySelector(".disponible")
 disponible.appendChild(disponibleUl)
+
+
+//range
+const inputPrixMax = document.getElementById("prix-max")
+inputPrixMax.addEventListener("input",()=>{
+    const piecesFilterRange=pieces.filter(function (piece){
+        return piece.prix <= inputPrixMax.value
+    })
+    document.querySelector(".fiches").innerHTML=""
+    genererPieces(piecesFilterRange)
+})
