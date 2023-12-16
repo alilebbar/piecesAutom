@@ -1,5 +1,20 @@
+import { ajoutListenersAvis, ajoutListenerEnvoyerAvis, afficherAvis, supprimerAvis, afficherGraphiqueAvis } from "./avis.js";
+
+// Récupération des pièces éventuellement stockées dans le localStorage
+let pieces = window.localStorage.getItem("pieces");
+
+if(pieces===null){
 // Importé les données de JSON
-const pieces = await fetch("pieces-autos.json").then((pieces)=>pieces.json())
+const pieces = await fetch("http://localhost:8081/pieces").then((pieces)=>pieces.json())
+ // Transformation des pièces en JSON
+ const valeurPieces = JSON.stringify(pieces);
+ // Stockage des informations dans le localStorage
+ window.localStorage.setItem("pieces", valeurPieces);
+}else{
+    pieces = JSON.parse(pieces);
+}
+//appeler la function d'ajout d'avis
+ajoutListenerEnvoyerAvis()
 
 //Construire notre balise
 function genererPieces(pieces){
@@ -18,6 +33,10 @@ const descriptionElement = document.createElement("p")
 descriptionElement.innerText= article.description ?? "(Pas de description pour le moment.)"
 const stockElement = document.createElement("p")
 stockElement.innerText = `${article.disponibilite ? "En Stock" : "Rupture de stock"}`
+// ajouter boutton avis
+const avisBouton = document.createElement("button");
+avisBouton.dataset.id = article.id;
+avisBouton.textContent = "Afficher les avis";
 
 //Rattachement de notre balise au DOM
 
@@ -29,10 +48,25 @@ piecesElement.appendChild(prixElement)
 piecesElement.appendChild(categorieElement)
 piecesElement.appendChild(descriptionElement)
 piecesElement.appendChild(stockElement)
+piecesElement.appendChild(avisBouton)
 }
+// Ajout de la fonction ajoutListenersAvis
+ajoutListenersAvis();
 }
 
 genererPieces(pieces)
+
+//pour lessez les avis afficher
+for(let i = 0; i < pieces.length; i++){
+    const id = pieces[i].id;
+    const avisJSON = window.localStorage.getItem(`avis-piece-${id}`)
+    const avis = JSON.parse(avisJSON);
+
+    if(avis !== null){
+        const pieceElement = document.querySelector(`article[data-id="${id}"]`);
+        if(pieceElement!==null)afficherAvis(pieceElement, avis)
+    }
+}
 
 const boutonTrier = document.querySelector(".btn-trier")
 boutonTrier.addEventListener("click", function () {
@@ -125,3 +159,11 @@ inputPrixMax.addEventListener("input",()=>{
     document.querySelector(".fiches").innerHTML=""
     genererPieces(piecesFilterRange)
 })
+
+// Ajout du listener pour mettre à jour des données du localStorage
+const boutonMettreAJour = document.querySelector(".btn-maj");
+boutonMettreAJour.addEventListener("click", function () {
+  window.localStorage.removeItem("pieces");
+});
+supprimerAvis()
+await afficherGraphiqueAvis()
